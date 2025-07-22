@@ -2,7 +2,12 @@
 
 A SwiftUI chat application built with Apple's Foundation Models framework, showcasing on-device AI capabilities with persistent conversation storage.
 
-![Preview](Images/image.png)
+
+## Preview:
+<div align="center">
+  <img src="Images/image.png" height="480" alt="apple logo"  />
+  <img width="12" />
+</div>
 
 ## Requirements
 
