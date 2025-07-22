@@ -13,26 +13,28 @@ struct ConversationDetailView: View {
   @FocusState var isInputFocused: Bool
 
   var body: some View {
-    ScrollView {
-      LazyVStack {
-        ForEach(conversation.sortedMessages) { message in
-          MessageView(message: message)
-            .id(message.id)
-        }
+      VStack {
+          ScrollView {
+              LazyVStack {
+                  ForEach(conversation.sortedMessages) { message in
+                      MessageView(message: message)
+                          .id(message.id)
+                  }
+              }
+              .scrollTargetLayout()
+              .padding(.bottom, 50)
+          }
+          .onAppear {
+              isInputFocused = true
+              withAnimation {
+                  scrollPosition.scrollTo(edge: .bottom)
+              }
+          }
+          .scrollDismissesKeyboard(.interactively)
+          .scrollPosition($scrollPosition, anchor: .bottom)
       }
-      .scrollTargetLayout()
-      .padding(.bottom, 50)
-    }
-    .onAppear {
-      isInputFocused = true
-      withAnimation {
-        scrollPosition.scrollTo(edge: .bottom)
-      }
-    }
-    .scrollDismissesKeyboard(.interactively)
-    .scrollPosition($scrollPosition, anchor: .bottom)
-    .navigationTitle("Messages")
-    .navigationBarTitleDisplayMode(.inline)
+//    .navigationTitle("Messages")
+//    .navigationBarTitleDisplayMode(.inline)
     .toolbarRole(.editor)
     .toolbar {
       ConversationDetailInputView(
@@ -46,8 +48,35 @@ struct ConversationDetailView: View {
           isGenerating = false
         }
       )
+        ToolbarItem(placement: .principal) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Chat with \(chattingWith)")
+                    .font(.title3)
+                    .bold()
+                Text(chatEngine.isAvailable ? "Online" : "Offline")
+                    .font(.caption)
+                    .bold()
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(chatEngine.isAvailable ? .green : .gray)
+                            .opacity(0.75)
+                    )
+                
+            }
+            .backgroundExtensionEffect()
+            .accessibilityLabel("Chatbot status: " + (chatEngine.isAvailable ? "Online" : "Offline"))
+        }
+        ToolbarItem(placement: .navigationBarTrailing) {
+            
+        }
     }
   }
+    
+    var chattingWith: String {
+        conversation.messages.last?.role.rawValue ?? "Unknown"
+    }
 }
 
 extension ConversationDetailView {
@@ -110,6 +139,8 @@ extension ConversationDetailView {
         timestamp: Date())
     ],
     summary: "A preview conversation")
-  ConversationDetailView(conversation: conversation)
-  .environment(ChatEngine(conversation: conversation))
+    NavigationView {
+        ConversationDetailView(conversation: conversation)
+        .environment(ChatEngine(conversation: conversation))
+    }
 }

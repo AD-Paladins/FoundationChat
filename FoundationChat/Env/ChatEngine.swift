@@ -39,10 +39,10 @@ class ChatEngine {
     self.conversation = conversation
     session = LanguageModelSession(tools: [WebAnalyserTool()]) {
       """
-      You're an helpful chatbot. The user will send you messages, and you'll respond to them.
+      You're a helpful chatbot. The user will send you messages, and you'll respond to them.
       Be short, it's a chat application.
       You can also summarize the conversation when asked to.
-      Each messages will have a role, either user or assistant or system for initial conversation configuration.
+      Each message will have a role, either user, assistant or system for initial conversation configuration.
       """
     }
   }
@@ -105,5 +105,38 @@ class ChatEngine {
         """
       }
     }
+  }
+
+  /// Send a message as any Role, optionally with webpage metadata
+  /// This demonstrates advanced usage of FoundationModels allowing
+  /// creation of messages with dynamic attachments and roles.
+  func sendMessage(as role: Role, content: String, metadata: WebPageMetadata? = nil) {
+    let message = Message(
+      content: content,
+      role: role,
+      timestamp: Date(),
+      attachementTitle: metadata?.title,
+      attachementDescription: metadata?.description,
+      attachementThumbnail: metadata?.thumbnail
+    )
+    conversation.messages.append(message)
+    // Use your persistence mechanism here, e.g., saving to modelContext if available
+  }
+
+  /// Attach dynamic webpage metadata to an assistant message (simulated example)
+  /// Illustrates enriching assistant responses with webpage previews using FoundationModels.
+  func respondWithWebPageAnalysis(content: String, url: String) {
+    let meta = WebPageMetadata(
+      title: "Preview of: \(url)",
+      thumbnail: "https://example.com/favicon.ico",
+      description: "Auto-generated preview for \(url)."
+    )
+    sendMessage(as: .assistant, content: content, metadata: meta)
+  }
+
+  /// Inject a system message into the conversation
+  /// Useful for adding system-level instructions or context dynamically.
+  func injectSystemMessage(_ content: String) {
+    sendMessage(as: .system, content: content)
   }
 }
